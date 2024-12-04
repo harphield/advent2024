@@ -37,6 +37,8 @@ fn main() -> Result<(), io::Error> {
 
     println!("Part 1: {}", cnt);
 
+    println!("Part 2: {}", find_x(&grid, width, height));
+
     Ok(())
 }
 
@@ -168,4 +170,65 @@ fn next_letter(letter: char) -> Option<char> {
         'A' => Some('S'),
         _ => None,
     }
+}
+
+fn find_x(grid: &Vec<char>, width: usize, height: usize) -> usize {
+    let mut count = 0;
+
+    for (i, c) in grid.iter().enumerate() {
+        let x = i % width;
+        let y = i / width;
+
+        if c.eq(&'A') {
+            // MMASS
+            if (y > 0 && x % width > 0 && grid[(x - 1) + (y - 1) * width] == 'M')
+                && (y > 0 && x % width < width - 1 && grid[(x + 1) + (y - 1) * width] == 'M')
+                && (y < height - 1 && x % width > 0 && grid[(x - 1) + (y + 1) * width] == 'S')
+                && (y < height - 1
+                    && x % width < width - 1
+                    && grid[(x + 1) + (y + 1) * width] == 'S')
+            {
+                count += 1;
+                continue;
+            }
+
+            // SSAMM
+            if (y > 0 && x % width > 0 && grid[(x - 1) + (y - 1) * width] == 'S')
+                && (y > 0 && x % width < width - 1 && grid[(x + 1) + (y - 1) * width] == 'S')
+                && (y < height - 1 && x % width > 0 && grid[(x - 1) + (y + 1) * width] == 'M')
+                && (y < height - 1
+                    && x % width < width - 1
+                    && grid[(x + 1) + (y + 1) * width] == 'M')
+            {
+                count += 1;
+                continue;
+            }
+
+            // MSAMS
+            if (y > 0 && x % width > 0 && grid[(x - 1) + (y - 1) * width] == 'M')
+                && (y > 0 && x % width < width - 1 && grid[(x + 1) + (y - 1) * width] == 'S')
+                && (y < height - 1 && x % width > 0 && grid[(x - 1) + (y + 1) * width] == 'M')
+                && (y < height - 1
+                    && x % width < width - 1
+                    && grid[(x + 1) + (y + 1) * width] == 'S')
+            {
+                count += 1;
+                continue;
+            }
+
+            // SMASM
+            if (y > 0 && x % width > 0 && grid[(x - 1) + (y - 1) * width] == 'S')
+                && (y > 0 && x % width < width - 1 && grid[(x + 1) + (y - 1) * width] == 'M')
+                && (y < height - 1 && x % width > 0 && grid[(x - 1) + (y + 1) * width] == 'S')
+                && (y < height - 1
+                    && x % width < width - 1
+                    && grid[(x + 1) + (y + 1) * width] == 'M')
+            {
+                count += 1;
+                continue;
+            }
+        }
+    }
+
+    count
 }
