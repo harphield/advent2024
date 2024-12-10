@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io;
@@ -42,6 +43,9 @@ fn main() -> Result<(), io::Error> {
 
     let mut result = 0;
     let mut correct = true;
+
+    let mut incorrect = vec![];
+
     updates.iter().for_each(|update| {
         correct = true;
 
@@ -56,6 +60,7 @@ fn main() -> Result<(), io::Error> {
 
             if num1_pos.is_some() && num2_pos.is_some() && num1_pos.unwrap() > num2_pos.unwrap() {
                 correct = false;
+                incorrect.push(update.clone());
                 break;
             }
         }
@@ -66,6 +71,32 @@ fn main() -> Result<(), io::Error> {
     });
 
     println!("Part 1: {}", result);
+
+    // sorting incorrect ones
+    result = 0;
+
+    incorrect.iter_mut().for_each(|update| {
+        update.sort_by(|a, b| {
+            match rules.iter().find(|(x, y)| {
+                return x == a && y == b || x == b && y == a;
+            }) {
+                None => {}
+                Some(rule) => {
+                    if rule.0 == *a {
+                        return Ordering::Less;
+                    } else if rule.0 == *b {
+                        return Ordering::Greater;
+                    }
+                }
+            }
+
+            Ordering::Equal
+        });
+
+        result += update[(update.len() as f32 / 2f32).floor() as usize];
+    });
+
+    println!("Part 2: {}", result);
 
     Ok(())
 }
