@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::BufRead;
 
+#[derive(Clone, Hash, PartialEq, Eq, Debug)]
 enum Direction {
     Up,
     Down,
@@ -13,7 +14,7 @@ enum Direction {
 fn main() -> Result<(), io::Error> {
     let file = File::open("input.txt")?;
 
-    let mut obstacles = vec![];
+    let mut obstacles = HashSet::new();
     let mut start = 0;
     let mut index = 0;
     let mut width = 0;
@@ -29,7 +30,9 @@ fn main() -> Result<(), io::Error> {
                 line.chars().for_each(|c| {
                     match c {
                         '^' => start = index,
-                        '#' => obstacles.push(index),
+                        '#' => {
+                            obstacles.insert(index);
+                        }
                         _ => {}
                     }
 
@@ -123,6 +126,87 @@ fn main() -> Result<(), io::Error> {
     println!();
 
     println!("Part 1: {}", traveled.len());
+
+    let mut loops = 0;
+
+    for p in traveled.iter() {
+        if *p == start {
+            continue;
+        }
+
+        obstacles.insert(*p);
+
+        let mut traveled_with_direction = HashSet::new();
+
+        position = start;
+        direction = Direction::Up;
+
+        loop {
+            let x = position % width;
+            let y = position / width;
+
+            if !traveled_with_direction.insert((position, direction.clone())) {
+                // looping!
+                loops += 1;
+                break;
+            }
+
+            match direction {
+                Direction::Up => {
+                    if y == 0 {
+                        break;
+                    }
+
+                    if obstacles.contains(&((y - 1) * width + x)) {
+                        direction = Direction::Right;
+                        continue;
+                    }
+
+                    position = (y - 1) * width + x;
+                }
+                Direction::Down => {
+                    if y == height - 1 {
+                        break;
+                    }
+
+                    if obstacles.contains(&((y + 1) * width + x)) {
+                        direction = Direction::Left;
+                        continue;
+                    }
+
+                    position = (y + 1) * width + x;
+                }
+                Direction::Left => {
+                    if x == 0 {
+                        break;
+                    }
+
+                    if obstacles.contains(&(y * width + x - 1)) {
+                        direction = Direction::Up;
+                        continue;
+                    }
+
+                    position = y * width + x - 1;
+                }
+                Direction::Right => {
+                    if x == width - 1 {
+                        break;
+                    }
+
+                    if obstacles.contains(&(y * width + x + 1)) {
+                        direction = Direction::Down;
+                        continue;
+                    }
+
+                    position = y * width + x + 1;
+                }
+            }
+        }
+
+        obstacles.remove(p);
+    }
+
+    println!("Part 2: {}", loops);
 
     Ok(())
 }
