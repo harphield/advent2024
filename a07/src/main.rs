@@ -1,3 +1,4 @@
+use std::fmt::format;
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
@@ -27,6 +28,9 @@ fn main() -> Result<(), io::Error> {
                 if test_result == 0 {
                     test_result = try_operation(result, 0, &operands, 0, Operator::Plus);
                 }
+                if test_result == 0 {
+                    test_result = try_operation(result, 0, &operands, 0, Operator::Concat);
+                }
                 println!("{} = {:?} = {}", result, operands, test_result);
 
                 if test_result != 0 {
@@ -45,6 +49,7 @@ fn main() -> Result<(), io::Error> {
 enum Operator {
     Plus,
     Times,
+    Concat,
 }
 
 fn try_operation(
@@ -70,6 +75,9 @@ fn try_operation(
         let new_current_result = match operator {
             Operator::Plus => current_result + operands[current_operand],
             Operator::Times => current_result * operands[current_operand],
+            Operator::Concat => format!("{}{}", current_result, operands[current_operand])
+                .parse::<u64>()
+                .unwrap(),
         };
 
         let result_times = try_operation(
@@ -92,6 +100,17 @@ fn try_operation(
             );
             if result_plus == final_result {
                 result = result_plus;
+            } else {
+                let result_concat = try_operation(
+                    final_result,
+                    new_current_result,
+                    &operands,
+                    current_operand + 1,
+                    Operator::Concat,
+                );
+                if result_concat == final_result {
+                    result = result_concat;
+                }
             }
         }
     }
