@@ -41,7 +41,7 @@ fn main() -> Result<(), io::Error> {
         }
     }
 
-    println!("Part 1: {}", sum);
+    println!("Part 2: {}", sum);
 
     Ok(())
 }
