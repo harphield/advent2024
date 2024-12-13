@@ -27,12 +27,13 @@ fn main() -> Result<(), io::Error> {
                 height += 1;
             }
             Err(_) => {}
-        }
+        };
     }
 
-    println!("{:?}", nodes);
+    // println!("{:?}", nodes);
 
     let mut antinodes = HashSet::new();
+    let mut antinodes_part_2 = HashSet::new();
 
     for (i, n) in nodes.iter().enumerate() {
         // find pairs for n
@@ -51,11 +52,22 @@ fn main() -> Result<(), io::Error> {
                         antinodes.insert(pos);
                     }
                 };
+
+                // part 2
+                for p in get_pos_in_distances(n.1, n2.1, width, height).iter() {
+                    antinodes_part_2.insert(*p);
+                }
+
+                for p in get_pos_in_distances(n2.1, n.1, width, height).iter() {
+                    antinodes_part_2.insert(*p);
+                }
             }
         }
     }
 
     println!("Part 1: {}", antinodes.len());
+
+    println!("Part 2: {}", antinodes_part_2.len());
 
     Ok(())
 }
@@ -76,11 +88,41 @@ fn get_pos_in_double_distance(
     let y3 = 2i32 * y2 as i32 - y1 as i32;
 
     if x3 >= 0 && y3 >= 0 && x3 < width as i32 && y3 < height as i32 {
-        println!("found: {} {}", x3, y3);
+        //println!("found: {} {}", x3, y3);
         return Some(y3 as usize * width + x3 as usize);
     }
 
     None
+}
+
+fn get_pos_in_distances(pos1: usize, pos2: usize, width: usize, height: usize) -> Vec<usize> {
+    let mut positions = vec![];
+
+    let mut x1 = pos1 % width;
+    let mut y1 = pos1 / width;
+    let mut x2 = pos2 % width;
+    let mut y2 = pos2 / width;
+
+    // first position is the second node
+    positions.push(y2 * width + x2);
+
+    loop {
+        let x3 = 2i32 * x2 as i32 - x1 as i32;
+        let y3 = 2i32 * y2 as i32 - y1 as i32;
+
+        if x3 >= 0 && y3 >= 0 && x3 < width as i32 && y3 < height as i32 {
+            //println!("found: {} {}", x3, y3);
+            positions.push(y3 as usize * width + x3 as usize);
+            x1 = x2;
+            y1 = y2;
+            x2 = x3 as usize;
+            y2 = y3 as usize;
+        } else {
+            break;
+        }
+    }
+
+    positions
 }
 
 #[cfg(test)]
