@@ -30,57 +30,55 @@ fn main() -> Result<(), io::Error> {
         }
     }
 
-    let mut i = 0;
+    // println!("{:?}", blocks);
+
+    let mut i = blocks.len() - 1;
     loop {
-        if i >= blocks.len() {
+        if i == 0 {
             break;
         }
 
         match blocks[i].0 {
-            None => {
-                let mut kill = true;
+            Some(index) => {
                 // empty space, we need to fill it
-                for j in (i..blocks.len()).rev() {
+                let mut found = false;
+
+                for j in 0..i {
                     match blocks[j].0 {
-                        None => {}
-                        Some(index) => {
-                            if blocks[i].1 > blocks[j].1 {
+                        None => {
+                            if blocks[j].1 > blocks[i].1 {
                                 // we have more space
-                                let amount = blocks[i].1 - blocks[j].1;
+                                let amount = blocks[j].1 - blocks[i].1;
                                 let new_space = (None, amount);
-                                let value = blocks[j].1;
-                                blocks.remove(i);
-                                blocks.insert(i, new_space);
+                                let value = blocks[i].1;
                                 blocks.remove(j);
-                                blocks.insert(i, (Some(index), value));
+                                blocks.insert(j, new_space);
+                                blocks.remove(i);
+                                blocks.insert(i, (None, value));
+                                blocks.insert(j, (Some(index), value));
+                                found = true;
+                                break;
                             } else if blocks[i].1 == blocks[j].1 {
                                 // we have exactly enough space
-                                let value = blocks[j].1;
-                                blocks.remove(i);
-                                blocks.insert(i, (Some(index), value));
-                                blocks.remove(j);
-                            } else {
-                                // we don't have enough space
-                                let amount = blocks[j].1 - blocks[i].1;
                                 let value = blocks[i].1;
+                                blocks.remove(j);
+                                blocks.insert(j, (Some(index), value));
                                 blocks.remove(i);
-                                blocks.insert(i, (Some(index), value));
-                                blocks[j].1 = amount;
+                                blocks.insert(i, (None, value));
+                                found = true;
+                                break;
                             }
-
-                            //println!("{:?}", blocks);
-                            kill = false;
-                            break;
                         }
+                        _ => {}
                     }
                 }
 
-                if kill {
-                    break;
+                if !found {
+                    i -= 1;
                 }
             }
-            Some(_) => {
-                i += 1;
+            None => {
+                i -= 1;
             }
         }
     }
@@ -88,9 +86,11 @@ fn main() -> Result<(), io::Error> {
     let mut checksum = 0u64;
     let mut pos = 0;
     blocks.iter().for_each(|(index, number)| match index {
-        None => {}
+        None => {
+            pos += number;
+        }
         Some(i) => {
-            for n in 0..*number {
+            for _n in 0..*number {
                 checksum += pos as u64 * i;
 
                 pos += 1;
@@ -98,7 +98,7 @@ fn main() -> Result<(), io::Error> {
         }
     });
 
-    println!("Part 1: {}", checksum);
+    println!("Part 2: {}", checksum);
 
     Ok(())
 }
