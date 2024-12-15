@@ -42,6 +42,7 @@ fn main() -> Result<(), io::Error> {
 fn find_trails(grid: &Vec<u32>, width: usize, height: usize, start_index: usize, start: usize, next_value: u32, found: &mut Vec<(usize, usize)>) -> usize {
     if grid[start] == 9 {
         return if !found.contains(&(start_index, start)) {
+            // for part 2, comment this out
             found.push((start_index, start));
             1
         } else {
